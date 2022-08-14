@@ -2,7 +2,7 @@ from .reader import read_varint, read_binary_uint8, read_binary_int32
 from .varint import write_varint
 from .writer import write_binary_uint8, write_binary_int32
 from .columns import nestedcolumn
-
+import re
 
 class BlockInfo(object):
     is_overflows = False
@@ -175,6 +175,12 @@ class RowOrientedBlock(BaseBlock):
                 cwt = nestedcolumn.get_columns_with_types(type_)
             columns_with_cwt.append((name, cwt))
 
+        postfix:str = list(data[0].keys())[0].split('_')[-1]
+        if re.match(r'm\d+', postfix):
+            postfix = "_" + postfix
+        else:
+            postfix = ''
+
         for i, row in enumerate(data):
             if check_row_type:
                 check_row_type(row)
@@ -182,7 +188,7 @@ class RowOrientedBlock(BaseBlock):
             new_data = []
             for name, cwt in columns_with_cwt:
                 if cwt is None:
-                    new_data.append(row[name])
+                    new_data.append(row[name+postfix])
                 else:
                     new_data.append(self._pure_mutate_dicts_to_rows(
                         row[name], cwt, check_row_type

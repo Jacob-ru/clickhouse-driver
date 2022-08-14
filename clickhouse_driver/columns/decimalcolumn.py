@@ -13,6 +13,7 @@ class DecimalColumn(FormatColumn):
         self.precision = precision
         self.scale = scale
         super(DecimalColumn, self).__init__(**kwargs)
+        #self.nullable = True
 
         if types_check:
             def check_item(value):
@@ -51,14 +52,13 @@ class DecimalColumn(FormatColumn):
             scale = 10 ** self.scale
 
             for i, item in enumerate(items):
-                if nulls_map and nulls_map[i]:
+                if nulls_map and nulls_map[i] or item is None:
                     items[i] = null_value
                 else:
                     items[i] = int(Decimal(str(item)) * scale)
-
         else:
             for i, item in enumerate(items):
-                if nulls_map and nulls_map[i]:
+                if nulls_map and nulls_map[i] or item is None:
                     items[i] = null_value
                 else:
                     items[i] = int(Decimal(str(item)))
