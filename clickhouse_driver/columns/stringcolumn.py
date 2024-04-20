@@ -15,6 +15,7 @@ class String(Column):
         super(String, self).__init__(**kwargs)
 
     def write_items(self, items, buf):
+        items = [self.py_types[0](x) if x else self.null_value for x in items]
         buf.write_strings(items, encoding=self.encoding)
 
     def read_items(self, n_items, buf):
@@ -45,6 +46,7 @@ class FixedString(String):
         )
 
     def write_items(self, items, buf):
+        items = [self.py_types[0](x) if x else self.null_value for x in items]
         buf.write_fixed_strings(items, self.length, encoding=self.encoding)
 
 
@@ -56,6 +58,7 @@ class ByteFixedString(FixedString):
         return buf.read_fixed_strings(n_items, self.length)
 
     def write_items(self, items, buf):
+        items = [self.py_types[0](x) if x else self.null_value for x in items]
         buf.write_fixed_strings(items, self.length)
 
 

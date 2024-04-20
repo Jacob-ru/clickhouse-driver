@@ -93,6 +93,7 @@ class DateTime64Column(DateTimeColumn):
     def __init__(self, scale=0, **kwargs):
         self.scale = scale
         super(DateTime64Column, self).__init__(**kwargs)
+        #self.nullable = True
 
     def after_read_items(self, items, nulls_map=None):
         scale = float(10 ** self.scale)
@@ -142,7 +143,7 @@ class DateTime64Column(DateTimeColumn):
         to_timestamp = datetime.timestamp
 
         for i, item in enumerate(items):
-            if nulls_map and nulls_map[i]:
+            if nulls_map and nulls_map[i] or item is None:
                 items[i] = null_value
                 continue
 
@@ -150,6 +151,22 @@ class DateTime64Column(DateTimeColumn):
                 # support supplying raw integers to avoid
                 # costly timezone conversions when using datetime
                 continue
+
+            if isinstance(item, str):
+                import datetime as dt
+                formats = [
+                    '%Y-%m-%d',
+                    '%Y-%m-%d %H:%M:%S',
+                    '%H:%M:%S',
+                    '%Y-%m-%d %H:%M:%S.%f'
+                ]
+                for format in formats:
+                    try:
+                        item = dt.datetime.strptime(item, format)
+                    except:
+                        pass
+                    else:
+                        break
 
             if timezone:
                 # Set server's timezone for offset-naive datetime.
