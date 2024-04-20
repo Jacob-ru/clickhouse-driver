@@ -22,6 +22,7 @@ class BaseTestCase(TestCase):
     clickhouse_client_binary = file_config.get('db', 'client')
     host = file_config.get('db', 'host')
     port = file_config.getint('db', 'port')
+    secure_port = file_config.getint('db', 'secure_port')
     database = file_config.get('db', 'database')
     user = file_config.get('db', 'user')
     password = file_config.get('db', 'password')
@@ -29,6 +30,8 @@ class BaseTestCase(TestCase):
     client = None
     client_kwargs = None
     cli_client_kwargs = None
+
+    create_table_template = 'CREATE TABLE test ({}) ENGINE = Memory'
 
     @classmethod
     def emit_cli(cls, statement, database=None, encoding='utf-8', **kwargs):
@@ -109,7 +112,7 @@ class BaseTestCase(TestCase):
         super(BaseTestCase, cls).tearDownClass()
 
     @contextmanager
-    def create_table(self, columns, **kwargs):
+    def create_table(self, columns, template=None, **kwargs):
         if self.cli_client_kwargs:
             if callable(self.cli_client_kwargs):
                 cli_client_kwargs = self.cli_client_kwargs()
@@ -118,10 +121,8 @@ class BaseTestCase(TestCase):
             else:
                 kwargs.update(self.cli_client_kwargs)
 
-        self.emit_cli(
-            'CREATE TABLE test ({}) ''ENGINE = Memory'.format(columns),
-            **kwargs
-        )
+        template = template or self.create_table_template
+        self.emit_cli(template.format(columns), **kwargs)
         try:
             yield
         except Exception:

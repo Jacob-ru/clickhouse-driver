@@ -1,3 +1,4 @@
+from .columns.util import get_inner_spec, get_inner_columns_with_types
 from .reader import read_varint, read_binary_uint8, read_binary_int32
 from .varint import write_varint
 from .writer import write_binary_uint8, write_binary_int32
@@ -172,7 +173,8 @@ class RowOrientedBlock(BaseBlock):
         for name, type_ in columns_with_types:
             cwt = None
             if type_.startswith('Nested'):
-                cwt = nestedcolumn.get_columns_with_types(type_)
+                inner_spec = get_inner_spec('Nested', type_)
+                cwt = get_inner_columns_with_types(inner_spec)
             columns_with_cwt.append((name, cwt))
 
         postfix:str = list(data[0].keys())[0].split('_')[-1]
